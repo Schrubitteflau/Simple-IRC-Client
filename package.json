@@ -1,0 +1,20 @@
+{
+  "name": "typescript-node",
+  "version": "1.0.0",
+  "description": "A simple tool which helps me to communicate with an IRC server for Root Me (www.root-me.org) challenges",
+  "main": "dist/app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "concurrently -k -n \"Typescript,Node\" -p \"[{name}]\" -c \"blue,green\" \"tsc --watch\" \"nodemon ${main}\""
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^14.0.13",
+    "concurrently": "^5.2.0",
+    "nodemon": "^2.0.4",
+    "typescript": "^3.9.5"
+  },
+  "dependencies": {
+  }
+}
