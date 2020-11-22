@@ -1,8 +1,21 @@
-import { IRCCommand } from "../IRCCommand";
+import { IRCCommand, ICommandArguments } from "../IRCCommand";
 
-interface IJoinCommandArguments
+interface IJoinCommandArguments extends ICommandArguments
 {
     readonly channel: string;
+}
+
+// Module augmentation
+declare module "../IRCCommand"
+{
+    // Complete this enum declaration
+    enum AllowedCommands { JOIN = "JOIN" }
+
+    interface IRCCommand
+    {
+        // Add specific type to this method
+        is(type: "JOIN"): this is IRCJoinCommand
+    }
 }
 
 export class IRCJoinCommand extends IRCCommand implements IJoinCommandArguments
@@ -13,9 +26,7 @@ export class IRCJoinCommand extends IRCCommand implements IJoinCommandArguments
     {
         super("JOIN");
 
-        ({
-            channel: this.channel
-        } = config);
+        this.channel = config.channel;
     }
 
     protected getArgumentsTextValue(): string
@@ -23,3 +34,5 @@ export class IRCJoinCommand extends IRCCommand implements IJoinCommandArguments
         return this.channel;
     }
 }
+
+IRCCommand.Register("JOIN", IRCJoinCommand);

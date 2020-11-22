@@ -6,6 +6,19 @@ interface IPrivmsgCommandArguments
     readonly message: string;
 }
 
+// Module augmentation
+declare module "../IRCCommand"
+{
+    // Complete this enum declaration
+    enum AllowedCommands { PRIVMSG = "PRIVMSG" }
+
+    interface IRCCommand
+    {
+        // Add specific type to this method
+        is(type: "PRIVMSG"): this is IRCPrivmsgCommand
+    }
+}
+
 export class IRCPrivmsgCommand extends IRCCommand implements IPrivmsgCommandArguments
 {
     public readonly nickname: string;
@@ -15,10 +28,8 @@ export class IRCPrivmsgCommand extends IRCCommand implements IPrivmsgCommandArgu
     {
         super("PRIVMSG");
 
-        ({
-            nickname: this.nickname,
-            message: this.message
-        } = config);
+        this.nickname = config.nickname;
+        this.message = config.message;
     }
 
     protected getArgumentsTextValue(): string
@@ -26,3 +37,5 @@ export class IRCPrivmsgCommand extends IRCCommand implements IPrivmsgCommandArgu
         return `${this.nickname} ${this.message}`;
     }
 }
+
+IRCCommand.Register("PRIVMSG", IRCPrivmsgCommand);

@@ -5,6 +5,19 @@ interface INickCommandArguments
     readonly nickname: string;
 }
 
+// Module augmentation
+declare module "../IRCCommand"
+{
+    // Complete this enum declaration
+    enum AllowedCommands { NICK = "NICK" }
+
+    interface IRCCommand
+    {
+        // Add specific type to this method
+        is(type: "NICK"): this is IRCNickCommand
+    }
+}
+
 export class IRCNickCommand extends IRCCommand implements INickCommandArguments
 {
     public readonly nickname: string;
@@ -13,9 +26,7 @@ export class IRCNickCommand extends IRCCommand implements INickCommandArguments
     {
         super("NICK");
 
-        ({
-            nickname: this.nickname
-        } = config);
+        this.nickname = config.nickname;
     }
 
     protected getArgumentsTextValue(): string
@@ -23,3 +34,5 @@ export class IRCNickCommand extends IRCCommand implements INickCommandArguments
         return this.nickname;
     }
 }
+
+IRCCommand.Register("NICK", IRCNickCommand);

@@ -1,28 +1,13 @@
-import * as Commands from "./Commands";
 import { IRCLineParser } from "./IRCLineParser";
 
-const COMMAND_TYPE_CLASS =
-{
-    "NICK": Commands.IRCNickCommand,
-    "USER": Commands.IRCUserCommand,
-    "JOIN": Commands.IRCJoinCommand,
-    "PRIVMSG": Commands.IRCPrivmsgCommand
-} as const;
+// Enum which will be completed by subclasses of IRCCommand
+export enum AllowedCommands { }
 
+// Transforms keys of AllowedCommands into a string literal type like "JOIN" | "USER"
+type CommandType = keyof typeof AllowedCommands;
+
+// Custom error class
 export class UnknownCommandError extends Error {}
-
-export type CommandType = keyof typeof COMMAND_TYPE_CLASS;
-type CommandClass = typeof COMMAND_TYPE_CLASS[CommandType];
-
-function isValidCommand(toCheck: string): toCheck is CommandType
-{
-    return COMMAND_TYPE_CLASS.hasOwnProperty(toCheck);
-}
-
-/*function getCommandClass(command: CommandType): CommandClass
-{
-    return (COMMAND_TYPE_CLASS[command]);
-}*/
 
 export interface ICommand
 {
@@ -30,26 +15,28 @@ export interface ICommand
     readonly type: CommandType;
 }
 
-// Doesn't work :(
-// is(type: CommandType): this is typeof COMMAND_TYPE_CLASS[typeof type]
-// Can't find a way to use dynamically the types defined in COMMAND_TYPE_CLASS
-// Not good because we need to know the child classes from the parent (IRCCommand), so this make
-// circular dependencies because child classes must import the parent
-// A better way would be to write is() definition from each child class, until we don't have to
-// import Commands in this parent class anymore
-// --> bad design
-export declare interface IRCCommand
+export interface ICommandArguments
 {
-    is(type: "NICK"): this is Commands.IRCNickCommand,
-    is(type: "USER"): this is Commands.IRCUserCommand,
-    is(type: "JOIN"): this is Commands.IRCJoinCommand,
-    is(type: "PRIVMSG"): this is Commands.IRCPrivmsgCommand
+    readonly prefix?: string;
 }
+
+// Means that the values must be constructors with a single param config
+// Find a way to restrict config type to ICommandArguments extension
+//type SpecificCommandConstructor = new (config: ICommandArguments) => IRCCommand;
+type SpecificCommandConstructor = new (config: any) => IRCCommand;
 
 export abstract class IRCCommand implements ICommand
 {
     public readonly prefix?: string;
     public readonly type: CommandType;
+
+    // Map which register all the subclasses of IRCCommand
+    private static RegisteredCommandTypes: Map<string, SpecificCommandConstructor> = new Map<string, SpecificCommandConstructor>();
+
+    public static Register(type: CommandType, constructor: SpecificCommandConstructor)
+    {
+        IRCCommand.RegisteredCommandTypes.set(type, constructor);
+    }
 
     protected constructor(type: CommandType)
     {
@@ -59,8 +46,29 @@ export abstract class IRCCommand implements ICommand
     /* Not cool, because we don't reuse COMMAND_TYPE_CLASS object so getCommandClass() isn't that useful */
     public static instanciate(parser: IRCLineParser): IRCCommand
     {
-        if (isValidCommand(parser.command))
+        const constructor = this.RegisteredCommandTypes.get(parser.command);
+
+        // The constructor exists so the command is know and associated with a class
+        if (constructor)
         {
+            // Let's create an instance and return it
+            console.log("THE COMMAND " + parser.command + " IS VALID, INSTANCIATE IT");
+        }
+        else
+        {
+            console.log("UNKNOW COMMAND " + parser.command);
+        }
+
+        /*if (isValidCommand(parser.command))
+        {
+            // Find a way to force implementation of static FromParser() into child classes :
+
+            // If not undefined, then class exists, call constructor.FromParser() and return
+            // the created instance, so Commands won't be imported anymore --> no circular dependency
+            // If undefined, throw UnknownCommandError
+            // --> isValidCommand will be no longer needed
+            //const constructor = this.RegisteredCommandTypes.get(parser.command);
+
             switch (parser.command)
             {
                 case "NICK":
@@ -80,7 +88,7 @@ export abstract class IRCCommand implements ICommand
                         message: parser.getArgument(1)
                     });
             }
-        }
+        }*/
 
         throw new UnknownCommandError(`Unknown command : ${parser.command}`);
     }
@@ -90,10 +98,10 @@ export abstract class IRCCommand implements ICommand
         return `${this.type} ${this.getArgumentsTextValue()}\r\n`;
     }
 
-    protected abstract getArgumentsTextValue(): string;
-
-    public is(type: CommandType): this is CommandClass
+    public is(type: CommandType): boolean
     {
         return (this.type === type);
     }
+
+    protected abstract getArgumentsTextValue(): string;
 }

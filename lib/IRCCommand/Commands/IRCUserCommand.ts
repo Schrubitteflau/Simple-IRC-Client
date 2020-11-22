@@ -8,6 +8,19 @@ interface IUserCommandArguments
     readonly realName: string;
 }
 
+// Module augmentation
+declare module "../IRCCommand"
+{
+    // Complete this enum declaration
+    enum AllowedCommands { USER = "USER" }
+
+    interface IRCCommand
+    {
+        // Add specific type to this method
+        is(type: "USER"): this is IRCUserCommand
+    }
+}
+
 export class IRCUserCommand extends IRCCommand implements IUserCommandArguments
 {
     public readonly nickname: string;
@@ -19,12 +32,10 @@ export class IRCUserCommand extends IRCCommand implements IUserCommandArguments
     {
         super("USER");
 
-        ({
-            nickname: this.nickname,
-            hostname: this.hostname,
-            servername: this.servername,
-            realName: this.realName
-        } = config);
+        this.nickname = config.nickname;
+        this.hostname = config.hostname;
+        this.servername = config.servername;
+        this.realName = config.realName;
     }
 
     protected getArgumentsTextValue(): string
@@ -32,3 +43,5 @@ export class IRCUserCommand extends IRCCommand implements IUserCommandArguments
         return `${this.nickname} ${this.hostname} ${this.servername} ${this.realName}`;
     }
 }
+
+IRCCommand.Register("USER", IRCUserCommand);
