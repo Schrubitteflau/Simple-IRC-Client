@@ -16,6 +16,12 @@ declare module "../IRCCommand"
         // Add specific type to this method
         is(type: "JOIN"): this is IRCJoinCommand
     }
+
+    // Add the config type
+    interface ICommandConfigTypes
+    {
+        IJoinCommandArguments: new (config: IJoinCommandArguments) => IRCJoinCommand
+    }
 }
 
 export class IRCJoinCommand extends IRCCommand implements IJoinCommandArguments

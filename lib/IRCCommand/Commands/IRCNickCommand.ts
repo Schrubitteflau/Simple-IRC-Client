@@ -1,6 +1,6 @@
-import { IRCCommand } from "../IRCCommand";
+import { IRCCommand, ICommandArguments } from "../IRCCommand";
 
-interface INickCommandArguments
+interface INickCommandArguments extends ICommandArguments
 {
     readonly nickname: string;
 }
@@ -15,6 +15,12 @@ declare module "../IRCCommand"
     {
         // Add specific type to this method
         is(type: "NICK"): this is IRCNickCommand
+    }
+    
+    // Add the config type
+    interface ICommandConfigTypes
+    {
+        INickCommandArguments: new (config: INickCommandArguments) => IRCNickCommand
     }
 }
 

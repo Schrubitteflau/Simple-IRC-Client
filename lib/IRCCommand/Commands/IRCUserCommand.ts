@@ -1,6 +1,6 @@
-import { IRCCommand } from "../IRCCommand";
+import { IRCCommand, ICommandArguments } from "../IRCCommand";
 
-interface IUserCommandArguments
+interface IUserCommandArguments extends ICommandArguments
 {
     readonly nickname: string;
     readonly hostname: string;
@@ -18,6 +18,12 @@ declare module "../IRCCommand"
     {
         // Add specific type to this method
         is(type: "USER"): this is IRCUserCommand
+    }
+
+    // Add the config type
+    interface ICommandConfigTypes
+    {
+        IUserCommandArguments: new (config: IUserCommandArguments) => IRCUserCommand
     }
 }
 
