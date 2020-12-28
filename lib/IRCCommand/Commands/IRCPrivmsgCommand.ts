@@ -1,4 +1,5 @@
 import { IRCCommand, ICommandArguments } from "../IRCCommand";
+import { IRCLineParser } from "../IRCLineParser";
 
 interface IPrivmsgCommandArguments extends ICommandArguments
 {
@@ -21,7 +22,7 @@ declare module "../IRCCommand"
     // Add the config type
     interface ICommandConfigTypes
     {
-        IPrivmsgCommandArguments: new (config: IPrivmsgCommandArguments) => IRCPrivmsgCommand
+        IPrivmsgCommandArguments: new (config: IPrivmsgCommandArguments | IRCLineParser) => IRCPrivmsgCommand
     }
 }
 
@@ -30,12 +31,20 @@ export class IRCPrivmsgCommand extends IRCCommand implements IPrivmsgCommandArgu
     public readonly nickname: string;
     public readonly message: string;
 
-    public constructor(config: IPrivmsgCommandArguments)
+    public constructor(config: IPrivmsgCommandArguments | IRCLineParser)
     {
         super("PRIVMSG");
 
-        this.nickname = config.nickname;
-        this.message = config.message;
+        if (config instanceof IRCLineParser)
+        {
+            this.nickname = config.getArgument(0);
+            this.message = config.getArgument(1)
+        }
+        else
+        {
+            this.nickname = config.nickname;
+            this.message = config.message;
+        }
     }
 
     protected getArgumentsTextValue(): string

@@ -52,44 +52,8 @@ export abstract class IRCCommand implements ICommand
         // The constructor exists so the command is know and associated with a class
         if (constructor)
         {
-            // Let's create an instance and return it
-            console.log("THE COMMAND " + parser.command + " IS VALID, INSTANCIATE IT");
+            return new constructor(parser);
         }
-        else
-        {
-            console.log("UNKNOW COMMAND " + parser.command);
-        }
-
-        /*if (isValidCommand(parser.command))
-        {
-            // Find a way to force implementation of static FromParser() into child classes :
-
-            // If not undefined, then class exists, call constructor.FromParser() and return
-            // the created instance, so Commands won't be imported anymore --> no circular dependency
-            // If undefined, throw UnknownCommandError
-            // --> isValidCommand will be no longer needed
-            //const constructor = this.RegisteredCommandTypes.get(parser.command);
-
-            switch (parser.command)
-            {
-                case "NICK":
-                    return new Commands.IRCNickCommand({ nickname: parser.getArgument(0) });
-                case "JOIN":
-                    return new Commands.IRCJoinCommand({ channel: parser.getArgument(0) });
-                case "USER":
-                    return new Commands.IRCUserCommand({
-                        nickname: parser.getArgument(0),
-                        hostname: parser.getArgument(1),
-                        servername: parser.getArgument(2),
-                        realName: parser.getArgument(3)
-                    })
-                case "PRIVMSG":
-                    return new Commands.IRCPrivmsgCommand({
-                        nickname: parser.getArgument(0),
-                        message: parser.getArgument(1)
-                    });
-            }
-        }*/
 
         throw new UnknownCommandError(`Unknown command : ${parser.command}`);
     }

@@ -1,4 +1,5 @@
 import { IRCCommand, ICommandArguments } from "../IRCCommand";
+import { IRCLineParser } from "../IRCLineParser";
 
 interface IJoinCommandArguments extends ICommandArguments
 {
@@ -20,7 +21,7 @@ declare module "../IRCCommand"
     // Add the config type
     interface ICommandConfigTypes
     {
-        IJoinCommandArguments: new (config: IJoinCommandArguments) => IRCJoinCommand
+        IJoinCommandArguments: new (config: IJoinCommandArguments | IRCLineParser) => IRCJoinCommand
     }
 }
 
@@ -28,11 +29,18 @@ export class IRCJoinCommand extends IRCCommand implements IJoinCommandArguments
 {
     public readonly channel: string;
 
-    public constructor(config: IJoinCommandArguments)
+    public constructor(config: IJoinCommandArguments | IRCLineParser)
     {
         super("JOIN");
 
-        this.channel = config.channel;
+        if (config instanceof IRCLineParser)
+        {
+            this.channel = config.getArgument(0);
+        }
+        else
+        {
+            this.channel = config.channel;
+        }
     }
 
     protected getArgumentsTextValue(): string

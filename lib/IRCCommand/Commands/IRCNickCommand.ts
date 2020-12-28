@@ -1,4 +1,5 @@
 import { IRCCommand, ICommandArguments } from "../IRCCommand";
+import { IRCLineParser } from "../IRCLineParser";
 
 interface INickCommandArguments extends ICommandArguments
 {
@@ -20,7 +21,7 @@ declare module "../IRCCommand"
     // Add the config type
     interface ICommandConfigTypes
     {
-        INickCommandArguments: new (config: INickCommandArguments) => IRCNickCommand
+        INickCommandArguments: new (config: INickCommandArguments | IRCLineParser) => IRCNickCommand
     }
 }
 
@@ -28,11 +29,18 @@ export class IRCNickCommand extends IRCCommand implements INickCommandArguments
 {
     public readonly nickname: string;
 
-    public constructor(config: INickCommandArguments)
+    public constructor(config: INickCommandArguments | IRCLineParser)
     {
         super("NICK");
 
-        this.nickname = config.nickname;
+        if (config instanceof IRCLineParser)
+        {
+            this.nickname = config.getArgument(0);
+        }
+        else
+        {
+            this.nickname = config.nickname;
+        }
     }
 
     protected getArgumentsTextValue(): string

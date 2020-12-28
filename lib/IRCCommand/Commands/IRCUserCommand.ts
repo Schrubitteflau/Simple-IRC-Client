@@ -1,4 +1,5 @@
 import { IRCCommand, ICommandArguments } from "../IRCCommand";
+import { IRCLineParser } from "../IRCLineParser";
 
 interface IUserCommandArguments extends ICommandArguments
 {
@@ -23,7 +24,7 @@ declare module "../IRCCommand"
     // Add the config type
     interface ICommandConfigTypes
     {
-        IUserCommandArguments: new (config: IUserCommandArguments) => IRCUserCommand
+        IUserCommandArguments: new (config: IUserCommandArguments | IRCLineParser) => IRCUserCommand
     }
 }
 
@@ -34,14 +35,24 @@ export class IRCUserCommand extends IRCCommand implements IUserCommandArguments
     public readonly servername: string;
     public readonly realName: string;
 
-    public constructor(config: IUserCommandArguments)
+    public constructor(config: IUserCommandArguments | IRCLineParser)
     {
         super("USER");
 
-        this.nickname = config.nickname;
-        this.hostname = config.hostname;
-        this.servername = config.servername;
-        this.realName = config.realName;
+        if (config instanceof IRCLineParser)
+        {
+            this.nickname = config.getArgument(0);
+            this.hostname = config.getArgument(1);
+            this.servername = config.getArgument(2);
+            this.realName = config.getArgument(3);
+        }
+        else
+        {
+            this.nickname = config.nickname;
+            this.hostname = config.hostname;
+            this.servername = config.servername;
+            this.realName = config.realName;
+        }
     }
 
     protected getArgumentsTextValue(): string
